@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ item.name }}</title>
+</head>
+<body>
+    <h1>{{ item.name }}</h1>
+    <p>{{ item.description }}</p>
+    <p>Price: {{ item.price }} {{ item.currency }}</p>
+    <button id="buy-button">Buy</button>
+
+    <script src="https://js.stripe.com/v3/"></script>
+    <script>
+        var stripe = Stripe('{{ stripe_publishable_key }}');
+
+        document.getElementById('buy-button').addEventListener('click', function () {
+            fetch('/buy/{{ item.id }}')
+            .then(response => response.json())
+            .then(data => {
+                return stripe.redirectToCheckout({ sessionId: data.sessionId });
+            })
+            .then(result => {
+                if (result.error) {
+                    alert(result.error.message);
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        });
+    </script>
+</body>
+</html>
