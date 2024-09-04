@@ -1,13 +1,10 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ item.name }}</title>
-</head>
-<body>
+{% extends "payments/base.html" %}
+{% block title %}
+ {{ item.name }}
+{% endblock %}
+{% block content %}
     <h1>{{ item.name }}</h1>
-    <p>{{ item.description }}</p>
+    <p>{{ item.description|linebreaks }}</p>
     <p>Price: {{ item.price }} {{ item.currency }}</p>
     <button id="buy-button">Buy</button>
 
@@ -29,5 +26,4 @@
             .catch(error => console.error('Error:', error));
         });
     </script>
-</body>
-</html>
+{% endblock %}

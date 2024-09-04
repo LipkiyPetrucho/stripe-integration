@@ -35,13 +35,21 @@ def buy_item(request, id):
     return JsonResponse({"sessionId": session.id})
 
 
+def item_list(request):
+    items = Item.objects.all()
+    context = {"items": items}
+    return render(request, "payments/item/item_list.html", context)
+
+
 def item_detail(request, id):
     item = get_object_or_404(Item, id=id)
     context = {
         "item": item,
-        "stripe_publishable_key": os.getenv("STRIPE_PUBLISHABLE_KEY"),
+        "stripe_publishable_key": os.getenv(
+            "STRIPE_PUBLISHABLE_KEY"
+        ),  # убрать ключ так как он скорее всего не нужен тут.
     }
-    return render(request, "payments/item_detail.html", context)
+    return render(request, "payments/item/item_detail.html", context)
 
 
 def payment_completed(request):

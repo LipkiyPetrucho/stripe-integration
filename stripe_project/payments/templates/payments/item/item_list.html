@@ -1,0 +1,16 @@
+{% extends "payments/base.html" %}
+
+{% block title %}Items{% endblock %}
+
+{% block content %}
+    <div id="main" class="item-list">
+        <h1>Items</h1>
+        {% for item in items %}
+            <div class="item">
+                <a href="{{ item.get_absolute_url }}">{{ item.name }}</a>
+                <br>
+                {{ item.price }} {{ item.currency }}
+            </div>
+        {% endfor %}
+    </div>
+{% endblock %}
