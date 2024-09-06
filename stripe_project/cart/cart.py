@@ -7,7 +7,7 @@ from payments.models import Item
 
 class Cart:
     def __init__(self, request):
-        self.request = request.session
+        self.session = request.session
         cart = self.session.get(settings.CART_SESSION_ID)
         if not cart:
             cart = self.session[settings.CART_SESSION_ID] = {}

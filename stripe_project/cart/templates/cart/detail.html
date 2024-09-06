@@ -1,0 +1,34 @@
+{% extends "payments/base.html" %}
+
+{% block title %}
+ Your shopping cart
+{% endblock %}
+
+{% block content %}
+  <h1>Your shopping cart</h1>
+  {% for item in cart %}
+    {% with product=item.item %}
+      <a href="{{ item.get_absolute_url }}"></a>
+      <p>{{ product.name }}</p>
+      <form action="{% url 'cart:cart_add' product.id %}" method="post">
+          {{ item.update_quantity_form.quantity }}
+          {{ item.update_quantity_form.override }}
+          <input type="submit" value="Update">
+          {% csrf_token %}
+      </form>
+      <form action="{% url 'cart:cart_remove' product.id %}" method="post">
+          <input type="submit" value="Remove">
+          {% csrf_token %}
+      </form>
+      <p>Unit price {{ product.currency }} {{ item.price }}</p>
+      <p>Price {{ product.currency }} {{ item.total_price }}</p>
+    {% endwith %}
+  {% endfor %}
+  <p>Total</p>
+  {{ product.currency }} {{ cart.get_total_price }}
+  <p>
+     <a href="{% url 'payments:item_list' %}" class="button
+     light">Continue shopping</a>
+  </p>
+  <a href="#" class="button">Checkout</a>
+{% endblock %}

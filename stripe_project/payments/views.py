@@ -5,6 +5,7 @@ from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, render
 from django.urls import reverse
 
+from cart.forms import CartAddItemForm
 from payments.models import Item
 
 stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
@@ -43,8 +44,10 @@ def item_list(request):
 
 def item_detail(request, id):
     item = get_object_or_404(Item, id=id)
+    cart_item_form = CartAddItemForm()
     context = {
         "item": item,
+        "cart_item_form": cart_item_form,
         "stripe_publishable_key": os.getenv(
             "STRIPE_PUBLISHABLE_KEY"
         ),  # убрать ключ так как он скорее всего не нужен тут.
