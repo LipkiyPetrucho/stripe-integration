@@ -6,13 +6,13 @@
   <h1>Order summary</h1>
   {% for item in order.items.all %}
     <li>
-      <p>Product: {{ item.product.name }}</p>
-      <p>Price: {{ item.price }} {{ item.currency }}</p>
+      <p>Product: {{ item.item.name }}</p>
+      <p>Price: {{ item.price }} {{ item.item.currency }}</p>
       <p>Quantity: {{ item.quantity }}</p>
-      <p>Total: {{ item.get_cost }} {{ item.currency }}</p>
+      <p>Total: {{ item.get_cost }} {{ item.item.currency }}</p>
     </li>
   {% endfor %}
-  <b>Overall:</b> {{ order.get_total_cost }} {{ item.currency }}
+  <b>Overall:</b> {{ order.get_total_cost }} {{ item.item.currency }}
   <form action="{% url 'payment:buy_order' %}" method="post">
     <input type="submit" value="Pay now">
     {% csrf_token %}
