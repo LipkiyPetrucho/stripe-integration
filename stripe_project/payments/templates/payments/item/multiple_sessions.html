@@ -1,0 +1,37 @@
+<h1>Выберите валюту для оплаты</h1>
+<ul>
+    {% for currency, session_id in session_ids.items %}
+        <li>
+            <button onclick="redirectToCheckout('{{ session_id }}')">Оплатить в {{ currency }}</button>
+        </li>
+    {% endfor %}
+</ul>
+
+<script src="https://js.stripe.com/v3/"></script>
+<script>
+    function redirectToCheckout(sessionId) {
+    fetch(`/create-checkout-session/${sessionId}/`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token }}'
+        }
+    })
+    .then((response) => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok.');
+        }
+        return response.json();
+    })
+    .then((data) => {
+        if (data.url) {
+            window.location = data.url;  // Перенаправляем на Stripe URL
+        } else {
+            console.error('No URL returned in the response', data.error);
+        }
+    })
+    .catch((error) => {
+        console.error('There was a problem with the fetch operation:', error);
+    });
+    }
+</script>

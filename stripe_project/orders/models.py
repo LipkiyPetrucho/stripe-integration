@@ -38,3 +38,16 @@ class OrderItem(models.Model):
 
     def get_cost(self):
         return self.price * self.quantity
+
+
+class Payment(models.Model):
+    order = models.ForeignKey(Order, on_delete=models.CASCADE)
+    currency = models.CharField(max_length=3)
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    status = models.CharField(max_length=20,
+                              choices=[('pending', 'Pending'), ('completed', 'Completed'), ('failed', 'Failed')],
+                              default='pending')
+    session_id = models.CharField(max_length=255)
+
+    def __str__(self):
+        return f"{self.order.id} - {self.currency} - {self.status}"
