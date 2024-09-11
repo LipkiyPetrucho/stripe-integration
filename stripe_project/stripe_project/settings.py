@@ -14,7 +14,6 @@ ALLOWED_HOSTS = []
 
 INSTALLED_APPS = [
     "payments.apps.PaymentsConfig",
-    "cart.apps.CartConfig",
     "orders.apps.OrdersConfig",
     "django.contrib.admin",
     "django.contrib.auth",
@@ -47,7 +46,6 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
-                "cart.context_processors.cart",
             ],
         },
     },
@@ -90,5 +88,4 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 STRIPE_SECRET_KEY = os.getenv("STRIPE_SECRET_KEY")
 STRIPE_PUBLISHABLE_KEY = os.getenv("STRIPE_PUBLISHABLE_KEY")
-DOMAIN = os.getenv("DOMAIN")
-CART_SESSION_ID = "cart"
+DOMAIN = os.getenv("DOMAIN", default="http://localhost:8000/")

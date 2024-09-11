@@ -1,8 +1,9 @@
 <h1>Выберите валюту для оплаты</h1>
 <ul>
-    {% for currency, session_id in session_ids.items %}
+    {% for currency, session_info in session_ids.items %}
+        <p>Сумма товаров: {{ session_info.1 }} {{ currency }}</p>
         <li>
-            <button onclick="redirectToCheckout('{{ session_id }}')">Оплатить в {{ currency }}</button>
+            <button onclick="redirectToCheckout('{{ session_info.0 }}')">Оплатить в {{ currency }}</button>
         </li>
     {% endfor %}
 </ul>

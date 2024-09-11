@@ -7,11 +7,6 @@
     <p>{{ item.description|linebreaks }}</p>
     <p>Price: {{ item.price }} {{ item.currency }}</p>
     <button id="buy-button">Buy</button>
-    <form action="{% url 'cart:cart_add' item.id %}" method="post">
-        {{ cart_item_form }}
-        {% csrf_token %}
-        <input type="submit" value="Add to cart">
-    </form>
 
     <script src="https://js.stripe.com/v3/"></script>
     <script>
@@ -21,7 +16,12 @@
             fetch('/buy/{{ item.id }}')
             .then(response => response.json())
             .then(data => {
-                return stripe.redirectToCheckout({ sessionId: data.sessionId });
+                console.log(data);
+                if (data.sessionId) {
+                    return stripe.redirectToCheckout({ sessionId: data.sessionId });
+                } else {
+                    throw new Error('sessionId отсутствует');
+                }
             })
             .then(result => {
                 if (result.error) {

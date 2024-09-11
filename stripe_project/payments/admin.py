@@ -11,6 +11,5 @@ class ItemAdmin(admin.ModelAdmin):
         "price",
         "currency",
     ]
-    list_filter = ["currency"]
     search_fields = ["name", "description"]
     ordering = ["name"]

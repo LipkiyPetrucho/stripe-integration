@@ -12,4 +12,4 @@ class Item(models.Model):
         return self.name
 
     def get_absolute_url(self):
-        return reverse("payments:item_detail", args=[self.id])
+        return reverse("payments:item_detail", kwargs={"pk": self.pk})
