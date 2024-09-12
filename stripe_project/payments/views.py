@@ -85,7 +85,7 @@ class ItemsListView(ListView):
     paginate_by = 20
 
     def get_queryset(self):
-        return Item.objects.all().order_by('name')
+        return Item.objects.all().order_by("name")
 
 
 class ItemDetailView(DetailView):
@@ -98,7 +98,7 @@ class ItemDetailView(DetailView):
         return context
 
     def get_object(self):
-        return get_object_or_404(Item, pk=self.kwargs['pk'])
+        return get_object_or_404(Item, pk=self.kwargs["pk"])
 
 
 class CompletedPayView(TemplateView):
@@ -108,15 +108,18 @@ class CompletedPayView(TemplateView):
 class CanceledPayView(TemplateView):
     template_name = "payments/canceled.html"
 
+
 def create_checkout_session(request, session_id):
-    if request.method == 'POST':
+    if request.method == "POST":
         try:
             # Проверяем существование сессии Stripe по session_id
             session = stripe.checkout.Session.retrieve(session_id)
-            return JsonResponse({'url': session.url})  # Возвращаем URL для перенаправления
+            return JsonResponse(
+                {"url": session.url}
+            )  # Возвращаем URL для перенаправления
         except stripe.error.InvalidRequestError:
-            return JsonResponse({'error': 'Invalid session ID.'}, status=400)
+            return JsonResponse({"error": "Invalid session ID."}, status=400)
         except Exception as e:
             # Дополнительная обработка ошибок
-            return JsonResponse({'error': str(e)}, status=500)
-    return JsonResponse({'error': 'Invalid request method.'}, status=405)
+            return JsonResponse({"error": str(e)}, status=500)
+    return JsonResponse({"error": "Invalid request method."}, status=405)

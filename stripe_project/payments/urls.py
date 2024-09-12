@@ -1,7 +1,11 @@
 from django.urls import path
 from .views import (
     CreateCheckoutSessionView,
-    create_checkout_session, CompletedPayView, CanceledPayView, ItemsListView, ItemDetailView,
+    create_checkout_session,
+    CompletedPayView,
+    CanceledPayView,
+    ItemsListView,
+    ItemDetailView,
 )
 
 app_name = "payment"
