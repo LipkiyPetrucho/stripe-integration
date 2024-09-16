@@ -7,6 +7,7 @@ import requests
 import stripe
 from bs4 import BeautifulSoup
 from django.conf import settings
+from django.db.models import Sum
 from django.http import JsonResponse
 
 domain = settings.DOMAIN
@@ -34,6 +35,25 @@ def exchange_to_rubles() -> Decimal:
     return dollar_rate
 
 
+def get_total_price(items) -> Decimal:
+    """Функция, для получения общей суммы заказа"""
+    total_price_rub, total_price_usd = 0, 0
+    if items.filter(currency="rub"):
+        total_price_rub = items.filter(currency="rub").aggregate(Sum("price"))[
+            "price__sum"
+        ]
+        print(f"Сумма в RUB: {total_price_rub}")
+    if items.filter(currency="usd"):
+        total_price_usd = (
+            items.filter(currency="usd").aggregate(Sum("price"))["price__sum"]
+            * exchange_to_rubles()
+        )
+        print(f"Сумма в USD (в рублях): {total_price_usd}")
+    total_price = Decimal(total_price_rub + total_price_usd).quantize(Decimal("1.00"))
+    print(f"Итоговая сумма: {total_price}")
+    return total_price
+
+
 def create_stripe_checkout(item):
     try:
         session = stripe.checkout.Session.create(
@@ -59,10 +79,6 @@ def create_stripe_checkout(item):
         return JsonResponse({"error": str(e)})
     return JsonResponse({"sessionId": session.id})
 
-
-def get_total_price(items) -> Decimal:
-    """Функция, для получения общей суммы заказа"""
-    total_price = Decimal('0.00')
 
 def create_payment_intent(order):
     try:

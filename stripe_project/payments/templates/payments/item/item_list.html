@@ -3,14 +3,21 @@
 {% block title %}Items{% endblock %}
 
 {% block content %}
-    <div id="main" class="item-list">
-        <h1>Items</h1>
-        {% for item in items %}
-            <div class="item">
-                <a href="{{ item.get_absolute_url }}">{{ item.name }}</a>
-                <br>
-                {{ item.price }} {{ item.currency }}
-            </div>
-        {% endfor %}
-    </div>
+    <form method="post" action="{% url 'orders:create_order' %}">
+        {% csrf_token %}
+        <div id="main" class="item-list">
+            <h1>Items</h1>
+            {% for item in items %}
+                <div class="item">
+                    <a href="{{ item.get_absolute_url }}">{{ item.name }}</a>
+                    <input type="checkbox" name="item_ids" value="{{ item.pk }}">
+                    <br>
+                    {{ item.price }} {{ item.currency }}
+                </div>
+            {% endfor %}
+            {{ form.as_p }}
+            <p><input type="submit" value="Place order"></p>
+        </div>
+    </form>
 {% endblock %}
+

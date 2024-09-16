@@ -1,0 +1,15 @@
+{% extends "payments/base.html" %}
+
+{% block title %}
+  Order Detail
+{% endblock %}
+
+{% block content %}
+  <h1>Order {{ order.id }}</h1>
+
+  {% for order_item in items %}
+    <p>{{ order_item.item.name }} — {{ order_item.quantity }} x {{ order_item.price }} {{ order_item.item.currency }}</p>
+  {% endfor %}
+
+  <h3>Total Cost: {{ order.get_total_cost }}</h3>
+{% endblock %}

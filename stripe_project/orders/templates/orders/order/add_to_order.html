@@ -1,0 +1,15 @@
+{% extends "payments/base.html" %}
+
+{% block title %}
+  Add to order
+{% endblock %}
+
+{% block content %}
+  <form action="{% url 'orders:create_order' %}" method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-primary btn-block">
+        Создать заказ
+    </button>
+  </form>
+{% endblock %}

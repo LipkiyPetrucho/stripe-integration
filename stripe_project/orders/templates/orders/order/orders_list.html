@@ -1,0 +1,13 @@
+{% extends "payments/base.html" %}
+
+{% block title %}
+  Order List
+{% endblock %}
+
+{% block content %}
+  {% for order in orders %}
+    <h5>
+      <a href="{% url 'orders:view_order' order.id %}">Order #{{ order.id }}</a>
+    </h5>
+  {% endfor %}
+{% endblock %}
