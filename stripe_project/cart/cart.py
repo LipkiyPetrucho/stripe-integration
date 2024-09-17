@@ -3,6 +3,7 @@ from decimal import Decimal
 from django.conf import settings
 
 from payments.models import Item
+from payments.service import get_total_price_service
 
 
 class Cart:
@@ -15,7 +16,7 @@ class Cart:
 
     def add(self, item, quantity=1, override_quantity=False):
         """
-        Add an item to the basket or update its quantity.
+        Добавление товара в корзину или обновление его количества.
         """
         item_id = str(item.id)
         if item_id not in self.cart:
@@ -57,3 +58,11 @@ class Cart:
     def clear(self):
         del self.session[settings.CART_SESSION_ID]
         self.save()
+
+    def get_total_price_in_rubles(self):
+        """
+        Возвращает общую стоимость товаров в корзине, конвертируя их в рубли.
+        """
+        item_ids = self.cart.keys()
+        items = Item.objects.filter(id__in=item_ids)
+        return get_total_price_service(items)

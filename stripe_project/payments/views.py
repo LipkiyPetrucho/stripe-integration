@@ -6,9 +6,11 @@ from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, render, redirect
 from django.urls import reverse
 
+from cart.cart import Cart
 from cart.forms import CartAddItemForm
 from orders.models import Order
 from payments.models import Item
+from payments.service import exchange_to_rubles
 
 stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
 stripe_publishable_key = os.getenv("STRIPE_PUBLISHABLE_KEY")
@@ -42,6 +44,7 @@ def buy_item(request, id):
 def buy_order(request):
     order_id = request.session.get("order_id", None)
     order = get_object_or_404(Order, id=order_id)
+
     if request.method == "POST":
         success_url = request.build_absolute_uri(reverse("payment:completed"))
         cancel_url = request.build_absolute_uri(reverse("payment:canceled"))
@@ -52,29 +55,42 @@ def buy_order(request):
             "cancel_url": cancel_url,
             "line_items": [],
         }
-        for item in order.items.all():
+
+        # Обрабатываем каждую позицию в заказе
+        for order_item in order.items.all():
+            item = order_item.item  # Доступ к объекту Item через OrderItem
+            price_in_rubles = order_item.price
+
+            if item.currency == "usd":
+                # Конвертация USD в RUB
+                price_in_rubles = order_item.price * exchange_to_rubles()
+
             session_data["line_items"].append(
                 {
                     "price_data": {
-                        "unit_amount": int(item.price * Decimal("100")),
-                        "currency": item.item.currency,
+                        "unit_amount": int(price_in_rubles * Decimal("100")),
+                        "currency": "rub",  # Все цены передаются в рублях
                         "product_data": {
-                            "name": item.item.name,
+                            "name": item.name,  # Название товара из модели Item
                         },
                     },
-                    "quantity": item.quantity,
+                    "quantity": order_item.quantity,
                 }
             )
 
+        # Создание сессии оплаты Stripe
         session = stripe.checkout.Session.create(**session_data)
         return redirect(session.url, code=303)
+
     else:
         return render(request, "payments/item/process.html", locals())
 
 
 def item_list(request):
     items = Item.objects.all()
-    context = {"items": items}
+    cart = Cart(request)
+    total_cost_in_rubles = cart.get_total_price_in_rubles()
+    context = {"items": items, "total_cost_in_rubles": total_cost_in_rubles}
     return render(request, "payments/item/item_list.html", context)
 
 

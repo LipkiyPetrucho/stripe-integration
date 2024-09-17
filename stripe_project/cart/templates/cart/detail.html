@@ -24,8 +24,8 @@
       <p>Price {{ product.currency }} {{ item.total_price }}</p>
     {% endwith %}
   {% endfor %}
-  <p>Total</p>
-  {{ product.currency }} {{ cart.get_total_price }}
+  <p>Total in RUB:</p>
+    {{ total_cost_in_rubles }}
   <p>
      <a href="{% url 'payments:item_list' %}" class="button
      light">Continue shopping</a>

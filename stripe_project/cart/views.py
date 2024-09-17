@@ -31,4 +31,7 @@ def cart_detail(request):
         item["update_quantity_form"] = CartAddItemForm(
             initial={"quantity": item["quantity"], "override": True}
         )
-    return render(request, "cart/detail.html", {"cart": cart})
+    total_cost_in_rubles = cart.get_total_price_in_rubles()
+
+    return render(request, "cart/detail.html", {"cart": cart,
+                                                "total_cost_in_rubles": total_cost_in_rubles})
