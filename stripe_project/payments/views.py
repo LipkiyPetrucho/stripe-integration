@@ -10,7 +10,7 @@ from cart.cart import Cart
 from cart.forms import CartAddItemForm
 from orders.models import Order
 from payments.models import Item
-from payments.service import exchange_to_rubles
+from payments.service import exchange_to_rubles, get_total_price_from_items
 
 stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
 stripe_publishable_key = os.getenv("STRIPE_PUBLISHABLE_KEY")
@@ -45,6 +45,12 @@ def buy_order(request):
     order_id = request.session.get("order_id", None)
     order = get_object_or_404(Order, id=order_id)
 
+    # Рассчёт общей суммы в рублях для отображения на странице
+    items = order.items.all().values_list("item", flat=True)
+    total_price_in_rubles = get_total_price_from_items(
+        Item.objects.filter(id__in=items)
+    )
+
     if request.method == "POST":
         success_url = request.build_absolute_uri(reverse("payment:completed"))
         cancel_url = request.build_absolute_uri(reverse("payment:canceled"))
@@ -62,23 +68,21 @@ def buy_order(request):
             price_in_rubles = order_item.price
 
             if item.currency == "usd":
-                # Конвертация USD в RUB
                 price_in_rubles = order_item.price * exchange_to_rubles()
 
             session_data["line_items"].append(
                 {
                     "price_data": {
                         "unit_amount": int(price_in_rubles * Decimal("100")),
-                        "currency": "rub",  # Все цены передаются в рублях
+                        "currency": "rub",
                         "product_data": {
-                            "name": item.name,  # Название товара из модели Item
+                            "name": item.name,
                         },
                     },
                     "quantity": order_item.quantity,
                 }
             )
 
-        # Создание сессии оплаты Stripe
         session = stripe.checkout.Session.create(**session_data)
         return redirect(session.url, code=303)
 

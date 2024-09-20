@@ -10,12 +10,12 @@
     <ul>
         {% for item in cart %}
             <li>
-                {{ item.quantity }}x {{ item.item.name }}
-                <span>{{ item.currency }}{{ item.total_price }}</span>
+                {{ item.quantity }} {{ item.product.name }}:<br>
+                {{ item.total_price }} {{ item.product.currency }}
             </li>
         {% endfor %}
     </ul>
-    <p>Total: RUB {{ total_cost_in_rubles }}</p>
+    <p>Total: {{ cart.get_total_price }} RUB</p>
     <form method="post">
         {{ form.as_p }}
         <p><input type="submit" value="Place order"></p>

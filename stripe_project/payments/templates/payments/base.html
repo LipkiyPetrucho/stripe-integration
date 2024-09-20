@@ -11,10 +11,12 @@
     <div class="cart">
         {% with total_items=cart|length %}
           {% if total_items > 0 %}
+            {% for item in cart %}
+            {% endfor %}
             Your cart:
             <a href="{% url 'cart:cart_detail' %}">
                 {{ total_items }} item{{ total_items|pluralize }},
-                RUB {{ total_cost_in_rubles }}
+                {{ cart.get_total_price }} RUB
             </a>
           {% elif not order %}
             Your cart is empty.

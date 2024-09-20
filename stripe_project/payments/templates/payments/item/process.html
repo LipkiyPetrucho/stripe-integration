@@ -12,7 +12,7 @@
       <p>Total: {{ item.get_cost }} {{ item.item.currency }}</p>
     </li>
   {% endfor %}
-  <b>Overall:</b> {{ order.get_total_cost }} {{ item.item.currency }}
+  <b>Overall in RUB:</b> {{ order.get_total_cost }} RUB
   <form action="{% url 'payment:buy_order' %}" method="post">
     <input type="submit" value="Pay now">
     {% csrf_token %}

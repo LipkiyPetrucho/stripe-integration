@@ -7,7 +7,7 @@
 {% block content %}
   <h1>Your shopping cart</h1>
   {% for item in cart %}
-    {% with product=item.item %}
+    {% with product=item.product %}
       <a href="{{ item.get_absolute_url }}"></a>
       <p>{{ product.name }}</p>
       <form action="{% url 'cart:cart_add' product.id %}" method="post">
@@ -20,8 +20,8 @@
           <input type="submit" value="Remove">
           {% csrf_token %}
       </form>
-      <p>Unit price {{ product.currency }} {{ item.price }}</p>
-      <p>Price {{ product.currency }} {{ item.total_price }}</p>
+      <p>Unit price: {{ product.currency }} {{ item.price }}</p>
+      <p>Price: {{ product.currency }} {{ item.total_price }}</p>
     {% endwith %}
   {% endfor %}
   <p>Total in RUB:</p>

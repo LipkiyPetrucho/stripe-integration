@@ -1,6 +1,9 @@
+from decimal import Decimal
+
 from django.db import models
 
 from payments.models import Item
+from payments.service import exchange_to_rubles
 
 
 class Order(models.Model):
@@ -32,9 +35,19 @@ class OrderItem(models.Model):
     item = models.ForeignKey(Item, related_name="order_items", on_delete=models.CASCADE)
     price = models.DecimalField(max_digits=10, decimal_places=2)
     quantity = models.PositiveIntegerField(default=1)
+    currency = models.CharField(
+        max_length=3,
+        default="rub",
+    )
 
     def __str__(self):
         return str(self.id)
 
     def get_cost(self):
-        return self.price * self.quantity
+        total_price_rub = 0
+        total_price_usd = 0
+        if self.currency == "rub":
+            total_price_rub += self.price * self.quantity
+        elif self.currency == "usd":
+            total_price_usd += self.price * self.quantity * exchange_to_rubles()
+        return Decimal(total_price_rub + total_price_usd).quantize(Decimal("1.00"))

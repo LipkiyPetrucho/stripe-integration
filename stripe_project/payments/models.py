@@ -11,7 +11,9 @@ class Item(models.Model):
     description = models.TextField()
     price = models.DecimalField(max_digits=10, decimal_places=2)
     currency = models.CharField(
-        max_length=3, choices=CURRENCY, default="rub",
+        max_length=3,
+        choices=CURRENCY,
+        default="rub",
     )
 
     def __str__(self):
