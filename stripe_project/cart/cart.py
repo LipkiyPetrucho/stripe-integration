@@ -68,7 +68,9 @@ class Cart:
             if item["currency"] == "rub":
                 total_price_rub += item["price"] * item["quantity"]
             elif item["currency"] == "usd":
-                total_price_usd += item["price"] * item["quantity"] * exchange_to_rubles()
+                total_price_usd += (
+                    item["price"] * item["quantity"] * exchange_to_rubles()
+                )
         return Decimal(total_price_rub + total_price_usd).quantize(Decimal("1.00"))
 
     def clear(self):

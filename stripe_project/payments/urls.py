@@ -1,4 +1,6 @@
+import webhooks
 from django.urls import path
+from . import webhooks
 from .views import (
     buy_item,
     item_detail,
@@ -16,4 +18,5 @@ urlpatterns = [
     path("buy_order/", buy_order, name="buy_order"),
     path("completed/", payment_completed, name="completed"),
     path("canceled/", payment_canceled, name="canceled"),
+    path('payment/webhook/', webhooks.stripe_webhook, name='stripe-webhook'),
 ]

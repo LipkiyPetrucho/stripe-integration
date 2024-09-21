@@ -45,12 +45,6 @@ def buy_order(request):
     order_id = request.session.get("order_id", None)
     order = get_object_or_404(Order, id=order_id)
 
-    # Рассчёт общей суммы в рублях для отображения на странице
-    items = order.items.all().values_list("item", flat=True)
-    total_price_in_rubles = get_total_price_from_items(
-        Item.objects.filter(id__in=items)
-    )
-
     if request.method == "POST":
         success_url = request.build_absolute_uri(reverse("payment:completed"))
         cancel_url = request.build_absolute_uri(reverse("payment:canceled"))
@@ -85,7 +79,6 @@ def buy_order(request):
 
         session = stripe.checkout.Session.create(**session_data)
         return redirect(session.url, code=303)
-
     else:
         return render(request, "payments/item/process.html", locals())
 

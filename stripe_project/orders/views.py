@@ -31,5 +31,8 @@ def order_create(request):
     return render(
         request,
         "orders/order/create.html",
-        {"cart": cart, "form": form,},
+        {
+            "cart": cart,
+            "form": form,
+        },
     )
