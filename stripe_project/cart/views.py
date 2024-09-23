@@ -5,6 +5,7 @@ from cart.cart import Cart
 from cart.forms import CartAddItemForm
 from payments.models import Item
 from payments.service import get_total_price_from_cart
+from coupons.forms import CouponApplyForm
 
 
 @require_POST
@@ -30,7 +31,6 @@ def cart_remove(request, product_id):
 
 def cart_detail(request):
     cart = Cart(request)
-    print("Текущее состояние корзины:", cart)
     total_cost_in_rubles = get_total_price_from_cart(
         cart.cart
     )  # Передаем значения корзины
@@ -39,9 +39,13 @@ def cart_detail(request):
         item["update_quantity_form"] = CartAddItemForm(
             initial={"quantity": item["quantity"], "override": True}
         )
-
+    coupon_apply_form = CouponApplyForm()
     return render(
         request,
         "cart/detail.html",
-        {"cart": cart, "total_cost_in_rubles": total_cost_in_rubles},
+        {
+            "cart": cart,
+            "total_cost_in_rubles": total_cost_in_rubles,
+            "coupon_apply_form": coupon_apply_form,
+        },
     )

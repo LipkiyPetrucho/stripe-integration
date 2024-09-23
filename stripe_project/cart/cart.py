@@ -3,6 +3,7 @@ from decimal import Decimal
 from django.conf import settings
 
 from payments.models import Item
+from coupons.models import Coupon
 from payments.service import get_total_price_from_cart, exchange_to_rubles
 
 
@@ -13,6 +14,8 @@ class Cart:
         if not cart:
             cart = self.session[settings.CART_SESSION_ID] = {}
         self.cart = cart
+        # сохранить текущий примененный купон
+        self.coupon_id = self.session.get("coupon_id")
 
     def add(self, product, quantity=1, override_quantity=False):
         """
@@ -79,4 +82,23 @@ class Cart:
 
     def get_total_price_in_rubles(self):
         """Возвращает общую стоимость товаров в корзине, конвертируя их в рубли."""
-        return get_total_price_from_cart(self.cart)  # Передаем всю корзину
+        return get_total_price_from_cart(
+            self.cart
+        )  # TODO: Проверить надобность использования
+
+    @property
+    def coupon(self):
+        if self.coupon_id:
+            try:
+                return Coupon.objects.get(id=self.coupon_id)
+            except Coupon.DoesNotExist:
+                pass
+        return None
+
+    def get_discount(self):
+        if self.coupon:
+            return (self.coupon.discount / Decimal(100)) * self.get_total_price()
+        return Decimal(0)
+
+    def get_total_price_after_discount(self):
+        return self.get_total_price() - self.get_discount()

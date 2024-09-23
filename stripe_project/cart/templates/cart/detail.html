@@ -24,8 +24,24 @@
       <p>Price: {{ product.currency }} {{ item.total_price }}</p>
     {% endwith %}
   {% endfor %}
-  <p>Total in RUB:</p>
-    {{ total_cost_in_rubles }}
+
+  {% if cart.coupon %}
+    <p>₽{{ cart.get_total_price|floatformat:2 }}</p>
+    <p>"{{ cart.coupon.code }}" coupon</p>
+    <p>({{ cart.coupon.discount }}% off)</p>
+    <p>– ₽{{ cart.get_discount|floatformat:2 }}</p>
+  {% endif %}
+
+  <p>Total:</p>
+    ₽{{ cart.get_total_price_after_discount|floatformat:2 }}
+
+  <p>Apply a coupon:</p>
+  <form action="{% url 'coupons:apply' %}" method="post">
+      {{ coupon_apply_form }}
+      <input type="submit" value="Apply">
+      {% csrf_token %}
+  </form>
+
   <p>
      <a href="{% url 'payments:item_list' %}" class="button
      light">Continue shopping</a>

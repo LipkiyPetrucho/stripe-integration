@@ -18,5 +18,5 @@ urlpatterns = [
     path("buy_order/", buy_order, name="buy_order"),
     path("completed/", payment_completed, name="completed"),
     path("canceled/", payment_canceled, name="canceled"),
-    path('payment/webhook/', webhooks.stripe_webhook, name='stripe-webhook'),
+    path("payment/webhook/", webhooks.stripe_webhook, name="stripe-webhook"),
 ]

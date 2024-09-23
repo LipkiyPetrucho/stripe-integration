@@ -14,8 +14,14 @@
                 {{ item.total_price }} {{ item.product.currency }}
             </li>
         {% endfor %}
+        {% if cart.coupon %}
+          <li>
+            "{{ cart.coupon.code }}" ({{ cart.coupon.discount }}% off)
+            - ₽{{ cart.get_discount|floatformat:2 }}
+          </li>
+        {% endif %}
     </ul>
-    <p>Total: {{ cart.get_total_price }} RUB</p>
+    <p>Total: {{ cart.get_total_price_after_discount|floatformat:2 }} ₽</p>
     <form method="post">
         {{ form.as_p }}
         <p><input type="submit" value="Place order"></p>
