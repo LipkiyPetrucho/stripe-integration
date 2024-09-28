@@ -4,20 +4,36 @@
 
 {% block content %}
   <h1>Order summary</h1>
-  {% for item in order.items.all %}
-    <li>
-      <p>Product: {{ item.item.name }}</p>
-      <p>Price: {{ item.price }} {{ item.item.currency }}</p>
-      <p>Quantity: {{ item.quantity }}</p>
-      <p>Total: {{ item.get_cost }} {{ item.item.currency }}</p>
-    </li>
-  {% endfor %}
-  {% if order.coupon %}
-    ₽{{ order.get_total_cost_before_discount|floatformat:2 }}
-    "{{ order.coupon.code }}" coupon
-    ({{ order.discount }}% off)
-    – ₽{{ order.get_discount|floatformat:2 }}
-  {% endif %}
+  <ul>
+    {% for item in order.items.all %}
+      <li>
+        <p>Product: {{ item.item.name }}</p>
+        <p>Price: {{ item.price }} {{ item.item.currency }}</p>
+        <p>Quantity: {{ item.quantity }}</p>
+        <p>Total: {{ item.get_cost }} ₽</p>
+      </li>
+    {% endfor %}
+
+    {% if order.tax.exists %}
+        <li>
+          <p>Taxes:</p>
+          <ul>
+            {% for tax in order.tax.all %}
+              <li>{{ tax.name }} ({{ tax.rate }}%): ₽{{ order.get_total_tax|floatformat:2 }}</li>
+            {% endfor %}
+          </ul>
+        </li>
+      {% endif %}
+
+      {% if order.coupon %}
+        <li>
+          <!--  #TODO: проверить корректность отображения-->
+          "{{ order.coupon.code }}" coupon
+          ({{ order.discount }}% off)
+          – ₽{{ order.get_discount|floatformat:2 }}
+        </li>
+      {% endif %}
+  </ul>
   <b>Overall:</b> {{ order.get_total_cost|floatformat:2 }} ₽
   <form action="{% url 'payment:buy_order' %}" method="post">
     <input type="submit" value="Pay now">

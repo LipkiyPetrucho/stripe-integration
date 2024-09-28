@@ -45,20 +45,14 @@ class Cart:
         получить товары из базы данных.
         """
         product_ids = self.cart.keys()
-        print(f"__iter__: Идентификаторы товаров из корзины: {product_ids}")
         products = Item.objects.filter(id__in=product_ids)
-        print(f"Полученные объекты Item: {products}")
         cart = self.cart.copy()
-        print(f"Первоначальное состояние корзины: {cart}")
         for product in products:
             cart[str(product.id)]["product"] = product  # Добавляем обратно в 'cart'
             cart[str(product.id)]["currency"] = product.currency
-            print(f"информация о добавленном товаре: {product.name}, ID: {product.id}")
-        print(f"состояние корзины после добавления товаров: {cart}")
         for item in cart.values():
             item["price"] = Decimal(item["price"])
             item["total_price"] = item["price"] * item["quantity"]
-            print(f"состояние каждого элемента корзины: {item}")
             yield item
 
     def __len__(self):
@@ -77,6 +71,7 @@ class Cart:
         return Decimal(total_price_rub + total_price_usd).quantize(Decimal("1.00"))
 
     def clear(self):
+        self.session["coupon_id"] = None
         del self.session[settings.CART_SESSION_ID]
         self.save()
 

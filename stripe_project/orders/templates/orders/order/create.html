@@ -20,6 +20,14 @@
             - ₽{{ cart.get_discount|floatformat:2 }}
           </li>
         {% endif %}
+
+        {% for tax in order.tax.all %}
+            <li>
+                {{ tax.name }} ({{ tax.rate }}%):
+                - ₽{{ order.get_total_tax|floatformat:2 }}
+            </li>
+        {% endfor %}
+
     </ul>
     <p>Total: {{ cart.get_total_price_after_discount|floatformat:2 }} ₽</p>
     <form method="post">

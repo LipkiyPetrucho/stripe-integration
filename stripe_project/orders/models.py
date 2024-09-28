@@ -4,7 +4,7 @@ from django.conf import settings
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
 
-from coupons.models import Coupon
+from coupons.models import Coupon, Tax
 from payments.models import Item
 from payments.service import exchange_to_rubles
 
@@ -20,15 +20,13 @@ class Order(models.Model):
     updated = models.DateTimeField(auto_now=True)
     paid = models.BooleanField(default=False)
     stripe_id = models.CharField(max_length=250, blank=True)
-    coupon = models.ForeignKey(Coupon,
-                               related_name='orders',
-                               null=True,
-                               blank=True,
-                               on_delete=models.SET_NULL)
-    discount = models.IntegerField(default=0,
-                                   validators=[MinValueValidator(0),
-                                               MaxValueValidator(100)])
-
+    coupon = models.ForeignKey(
+        Coupon, related_name="orders", null=True, blank=True, on_delete=models.SET_NULL
+    )
+    discount = models.IntegerField(
+        default=0, validators=[MinValueValidator(0), MaxValueValidator(100)]
+    )
+    tax = models.ManyToManyField(Tax, verbose_name="Налог", blank=True)
 
     class Meta:
         ordering = ["-created"]
@@ -39,9 +37,19 @@ class Order(models.Model):
     def __str__(self):
         return f"Order {self.id}"
 
+    def get_total_tax(self):
+        total_tax = Decimal(0)
+        for tax in self.tax.all():
+            total_tax += self.get_total_cost_before_discount() * (
+                tax.rate / Decimal(100)
+            )
+        return total_tax
+
     def get_total_cost(self):
         total_cost = self.get_total_cost_before_discount()
-        return total_cost - self.get_discount()
+        total_cost -= self.get_discount()
+        total_cost += self.get_total_tax()
+        return total_cost
 
     def get_stripe_url(self):
         if not self.stripe_id:

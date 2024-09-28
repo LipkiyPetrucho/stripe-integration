@@ -55,14 +55,21 @@ def buy_order(request):
             "cancel_url": cancel_url,
             "line_items": [],
         }
+        stripe_tax_ids = []
+        if order.tax.exists():
+            for tax in order.tax.all():
+                stripe_tax = stripe.TaxRate.create(
+                    display_name=tax.name,
+                    inclusive=False,
+                    percentage=tax.rate,
+                )
+                stripe_tax_ids.append(stripe_tax.id)
 
         # Обрабатываем каждую позицию в заказе
         for order_item in order.items.all():
-            item = order_item.item  # Доступ к объекту Item через OrderItem
-            price_in_rubles = order_item.price
-
-            if item.currency == "usd":
-                price_in_rubles = order_item.price * exchange_to_rubles()
+            item = order_item.item
+            price_in_rubles = order_item.get_cost()
+            print(f"PRICE_IN_RUB: {price_in_rubles}")
 
             session_data["line_items"].append(
                 {
@@ -74,18 +81,17 @@ def buy_order(request):
                         },
                     },
                     "quantity": order_item.quantity,
+                    "tax_rates": stripe_tax_ids,
                 }
             )
         # купон Stripe
         if order.coupon:
             stripe_coupon = stripe.Coupon.create(
-                name=order.coupon.code,
-                percent_off=order.discount,
-                duration='once')
-            session_data['discounts'] = [{
-                'coupon': stripe_coupon.id
-            }]
+                name=order.coupon.code, percent_off=order.discount, duration="once"
+            )
+            session_data["discounts"] = [{"coupon": stripe_coupon.id}]
         session = stripe.checkout.Session.create(**session_data)
+        print(f"Order TAX: {order.tax}")
         return redirect(session.url, code=303)
     else:
         return render(request, "payments/item/process.html", locals())

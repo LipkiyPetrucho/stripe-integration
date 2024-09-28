@@ -6,8 +6,6 @@ import pytz
 import requests
 import stripe
 from bs4 import BeautifulSoup
-from django.conf import settings
-from django.db.models import Sum
 
 from payments.models import Item
 
@@ -44,21 +42,15 @@ def get_total_price_from_cart(cart_items) -> Decimal:
     item_ids = [
         item_id for item_id in cart_items.keys()
     ]  # Используем ключи (id товаров) из cart_items
-    print(f"список ключей (id) товаров в корзине: {item_ids}")
     items = Item.objects.filter(id__in=item_ids)  # Получаем объекты товаров по id
-    print(f"объекты товаров по id: {items}")
 
     # Создаем словарь для быстрого доступа к товарам по их id
     items_dict = {item.id: item for item in items}
-    print(f"словарь с id и товарами: {items_dict}")
 
     for item_id, item_data in cart_items.items():
         item_price = Decimal(item_data["price"])
-        print(f"извлечённые из корзины цены: {item_price}")
         item_quantity = item_data["quantity"]
-        print(f"извлечённые из корзины количества товара: {item_quantity}")
         product = items_dict[int(item_id)]  # Получаем товар по его id
-        print(f"список объектов товаров: {product}")
 
         # Проверяем валюту товара
         if product.currency == "rub":
