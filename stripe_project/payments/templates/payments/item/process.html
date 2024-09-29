@@ -13,30 +13,29 @@
         <p>Total: {{ item.get_cost }} ₽</p>
       </li>
     {% endfor %}
-
+  </ul>
     {% if order.tax.exists %}
-        <li>
-          <p>Taxes:</p>
-          <ul>
-            {% for tax in order.tax.all %}
-              <li>{{ tax.name }} ({{ tax.rate }}%): ₽{{ order.get_total_tax|floatformat:2 }}</li>
-            {% endfor %}
-          </ul>
-        </li>
+          <p><b>Taxes:</b></p>
+            <p>{% for tax in order.tax.all %}
+               {{ tax.name }} ({{ tax.rate }}%): ₽{{ order.get_total_tax|floatformat:2 }}
+               {% endfor %}</p>
       {% endif %}
 
       {% if order.coupon %}
-        <li>
-          <!--  #TODO: проверить корректность отображения-->
-          "{{ order.coupon.code }}" coupon
-          ({{ order.discount }}% off)
-          – ₽{{ order.get_discount|floatformat:2 }}
-        </li>
+          <p><b>Discount:</b></p>
+            <p>"{{ order.coupon.code }}" coupon
+               ({{ order.discount }}% off)
+               – ₽{{ order.get_discount|floatformat:2 }}</p>
       {% endif %}
-  </ul>
+
   <b>Overall:</b> {{ order.get_total_cost|floatformat:2 }} ₽
   <form action="{% url 'payment:buy_order' %}" method="post">
     <input type="submit" value="Pay now">
     {% csrf_token %}
+  </form>
+
+  <form action="{% url 'payment:buy_order_intent' %}" method="post">
+    {% csrf_token %}
+    <button type="submit">Pay now with PaymentIntent</button>
   </form>
 {% endblock %}
