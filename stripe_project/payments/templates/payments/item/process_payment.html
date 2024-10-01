@@ -9,36 +9,36 @@
   {% csrf_token %}
 </form>
 
-  <script src="https://js.stripe.com/v3/"></script>
-  <script>
-    const csrftoken = '{{ csrf_token }}';
-    const stripe = Stripe('{{ stripe_key }}');
-    const options = {
-      clientSecret: '{{ client_secret }}',
-          appearance: {
-            theme: 'night',
-          },
-    };
-    const elements = stripe.elements(options);
-
-    const paymentElement = elements.create('payment');
-    paymentElement.mount('#payment-element');
-
-    const form = document.getElementById('payment-form');
-    form.addEventListener('submit', async (event) => {
-      event.preventDefault();
-      const {error} = await stripe.confirmPayment({
-        elements,
-        confirmParams: {
-          return_url: "{{ completed_url }}",
+<script src="https://js.stripe.com/v3/"></script>
+<script>
+  const csrftoken = '{{ csrf_token }}';
+  const stripe = Stripe('{{ stripe_key }}');
+  const options = {
+    clientSecret: '{{ client_secret }}',
+        appearance: {
+          theme: 'night',
         },
-      });
+  };
+  const elements = stripe.elements(options);
 
-      if (error) {
-        const messageContainer = document.querySelector('#error-message');
-        messageContainer.textContent = error.message;
-      } else {
-        console.log('Redirecting to Stripe Checkout...');
-      }
+  const paymentElement = elements.create('payment');
+  paymentElement.mount('#payment-element');
+
+  const form = document.getElementById('payment-form');
+  form.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const {error} = await stripe.confirmPayment({
+      elements,
+      confirmParams: {
+        return_url: "{{ completed_url }}",
+      },
     });
-  </script>
+
+    if (error) {
+      const messageContainer = document.querySelector('#error-message');
+      messageContainer.textContent = error.message;
+    } else {
+      console.log('Redirecting to Stripe Checkout...');
+    }
+  });
+</script>

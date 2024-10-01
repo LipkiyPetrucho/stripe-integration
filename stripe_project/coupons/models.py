@@ -49,3 +49,4 @@ class Tax(models.Model):
             self.stripe_tax_id = tax_rate.id
             self.save()
         return self.stripe_tax_id
+    # TODO: Check

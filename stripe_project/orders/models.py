@@ -48,7 +48,6 @@ class Order(models.Model):
     def get_total_cost(self):
         total_cost = self.get_total_cost_before_discount()
         total_cost -= self.get_discount()
-        total_cost += self.get_total_tax()
         return total_cost
 
     def get_stripe_url(self):
