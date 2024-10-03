@@ -37,6 +37,7 @@ def exchange_to_rubles() -> Decimal:
 def get_total_price_from_cart(cart_items) -> Decimal:
     """Функция для получения общей суммы заказа."""
     total_price_rub, total_price_usd = 0, 0
+    exchange_rate = exchange_to_rubles()
 
     # Извлекаем идентификаторы товаров из словарей
     item_ids = [
@@ -56,7 +57,7 @@ def get_total_price_from_cart(cart_items) -> Decimal:
         if product.currency == "rub":
             total_price_rub += item_price * item_quantity
         elif product.currency == "usd":
-            total_price_usd += item_price * item_quantity * exchange_to_rubles()
+            total_price_usd += item_price * item_quantity * exchange_rate
 
     total_price = Decimal(total_price_rub + total_price_usd).quantize(Decimal("1.00"))
     print(f"Total price cart: {total_price}")

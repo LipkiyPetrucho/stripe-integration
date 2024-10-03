@@ -1,13 +1,43 @@
+<head>
+  <title>Checkout</title>
+</head>
+<body>
+<div class="order-summary" style="background-color: #1a1a1a; padding: 20px; color: #ffffff;">
+  <h1>Order summary</h1>
+  <ul>
+    {% for item in order.items.all %}
+      <li>
+        <p>Product: {{ item.item.name }}</p>
+        <p>Price: {{ item.price }} {{ item.item.currency }}</p>
+        <p>Quantity: {{ item.quantity }}</p>
+        <p>Total: {{ item.get_cost }} ₽</p>
+      </li>
+    {% endfor %}
+  </ul>
+  {% if order.coupon %}
+    <p><b>Discount:</b> "{{ order.coupon.code }}" ({{ order.discount }}% off) – ₽{{ order.get_discount|floatformat:2 }}</p>
+  {% endif %}
+  {% if order.tax.exists %}
+    <p><b>Taxes:</b></p>
+    <ul>
+      {% for tax in order.tax.all %}
+        <li>{{ tax.name }} ({{ tax.rate }}%): ₽{{ order.get_total_tax|floatformat:2 }}</li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+  <b>Overall:</b> {{ order.get_total_cost|floatformat:2 }} ₽
+</div>
 <form id="payment-form">
   <div id="payment-element">
     <!-- Elements will create form elements here -->
   </div>
-  <button id="submit">Submit</button>
+  <button id="submit">Buy</button>
   <div id="payment-message" class="hidden">
     <p id="error-message"></p>
   </div>
   {% csrf_token %}
 </form>
+</body>
 
 <script src="https://js.stripe.com/v3/"></script>
 <script>
