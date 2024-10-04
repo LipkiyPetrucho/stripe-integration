@@ -12,7 +12,6 @@ from cart.cart import Cart
 from cart.forms import CartAddItemForm
 from orders.models import Order
 from payments.models import Item
-from payments.service import exchange_to_rubles, get_total_price_from_items
 
 stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
 stripe_publishable_key = os.getenv("STRIPE_PUBLISHABLE_KEY")
