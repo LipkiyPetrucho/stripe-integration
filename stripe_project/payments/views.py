@@ -65,11 +65,16 @@ def buy_order(request):
                     percentage=tax.rate,
                 )
                 stripe_tax_ids.append(stripe_tax.id)
-
+        print(f"{order.items.all()}")
         # Обрабатываем каждую позицию в заказе
         for order_item in order.items.all():
+            print(f"order_item: {order_item}")
             item = order_item.item
-            price_in_rubles = order_item.get_cost()
+            print(f"item: {item}")
+            price_in_rubles = order_item.convert_item_price()
+            print(
+                f"высчитывается общая сумма заказа в рублях: {price_in_rubles} тип: {type(price_in_rubles)}"
+            )
 
             session_data["line_items"].append(
                 {
@@ -84,12 +89,15 @@ def buy_order(request):
                     "tax_rates": stripe_tax_ids,
                 }
             )
+            print(f"session_data: {session_data}")
+
         # купон Stripe
         if order.coupon:
             stripe_coupon = stripe.Coupon.create(
                 name=order.coupon.code, percent_off=order.discount, duration="once"
             )
             session_data["discounts"] = [{"coupon": stripe_coupon.id}]
+            print(f"session_data after coupon: {session_data}")
         session = stripe.checkout.Session.create(**session_data)
         return redirect(session.url, code=303)
     else:
@@ -117,36 +125,39 @@ def buy_order_intent(request):
         items_data = []
         for order_item in order.items.all():
             item = order_item.item
-            price_in_rubles = order_item.get_cost()
-            items_data.append({
-                "price_data": {
-                    "unit_amount": int(price_in_rubles * Decimal("100")),
-                    "currency": "rub",
-                    "product_data": {
-                        "name": item.name,
+            price_in_rubles = order_item.convert_item_price()
+            items_data.append(
+                {
+                    "price_data": {
+                        "unit_amount": int(price_in_rubles * Decimal("100")),
+                        "currency": "rub",
+                        "product_data": {
+                            "name": item.name,
+                        },
                     },
-                },
-                "quantity": order_item.quantity,
-                "tax_rates": stripe_tax_ids,
-            })
+                    "quantity": order_item.quantity,
+                    "tax_rates": stripe_tax_ids,
+                }
+            )
 
         # Обрабатываем каждую позицию в заказе
         intent = stripe.PaymentIntent.create(
             amount=total_amount,
             currency="rub",
-            metadata={"order_id": order.id,
-                      "order_items": json.dumps(items_data),
-                      },
+            metadata={
+                "order_id": order.id,
+                "order_items": json.dumps(items_data),
+            },
         )
-        completed_url = request.build_absolute_uri(reverse('payment:completed'))
+        completed_url = request.build_absolute_uri(reverse("payment:completed"))
         context = {
             "client_secret": intent.client_secret,
             "order": order,
             "stripe_tax_ids": stripe_tax_ids,
             "stripe_key": settings.STRIPE_PUBLISHABLE_KEY,
-            "completed_url": completed_url
+            "completed_url": completed_url,
         }
-        print(f'{context}')
+        print(f"{context}")
         return render(request, "payments/item/process_payment.html", context)
     else:
         return render(request, "payments/item/process.html", locals())
@@ -154,9 +165,7 @@ def buy_order_intent(request):
 
 def item_list(request):
     items = Item.objects.all()
-    cart = Cart(request)
-    total_cost_in_rubles = cart.get_total_price_in_rubles()
-    context = {"items": items, "total_cost_in_rubles": total_cost_in_rubles}
+    context = {"items": items}
     return render(request, "payments/item/item_list.html", context)
 
 

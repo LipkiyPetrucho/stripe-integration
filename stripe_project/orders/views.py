@@ -33,9 +33,7 @@ def order_create(request):
                         quantity=item["quantity"],
                         currency=item["currency"],
                     )
-                for (
-                    order_item
-                ) in order.items.all():
+                for order_item in order.items.all():
                     print(
                         f"OrderItem: ID={order_item.id},"
                         f" OrderID={order_item.order.id},"

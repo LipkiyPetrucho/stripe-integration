@@ -93,3 +93,9 @@ class OrderItem(models.Model):
         elif self.currency == "usd":
             total_price_usd += self.price * self.quantity * exchange_to_rubles()
         return Decimal(total_price_rub + total_price_usd).quantize(Decimal("1.00"))
+
+    def convert_item_price(self):
+        if self.currency == "usd":
+            return Decimal(self.price) * exchange_to_rubles()
+        else:
+            return Decimal(self.price)

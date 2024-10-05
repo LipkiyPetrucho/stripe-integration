@@ -11,6 +11,7 @@ from coupons.forms import CouponApplyForm
 @require_POST
 def cart_add(request, product_id):
     cart = Cart(request)
+    print(f"CARD_ADD -> cart: {vars(cart)}")
     product = get_object_or_404(Item, id=product_id)
     form = CartAddItemForm(request.POST)
     if form.is_valid():
@@ -18,6 +19,7 @@ def cart_add(request, product_id):
         cart.add(
             product=product, quantity=cd["quantity"], override_quantity=cd["override"]
         )
+    print(f"ADD -> cart: {vars(cart)}")
     return redirect("cart:cart_detail")
 
 

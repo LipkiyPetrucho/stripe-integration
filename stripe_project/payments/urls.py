@@ -7,7 +7,8 @@ from .views import (
     payment_completed,
     payment_canceled,
     item_list,
-    buy_order, buy_order_intent,
+    buy_order,
+    buy_order_intent,
 )
 
 app_name = "payment"
