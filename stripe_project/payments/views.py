@@ -8,7 +8,6 @@ from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, render, redirect
 from django.urls import reverse
 
-from cart.cart import Cart
 from cart.forms import CartAddItemForm
 from orders.models import Order
 from payments.models import Item
@@ -65,17 +64,11 @@ def buy_order(request):
                     percentage=tax.rate,
                 )
                 stripe_tax_ids.append(stripe_tax.id)
-        print(f"{order.items.all()}")
+
         # Обрабатываем каждую позицию в заказе
         for order_item in order.items.all():
-            print(f"order_item: {order_item}")
             item = order_item.item
-            print(f"item: {item}")
             price_in_rubles = order_item.convert_item_price()
-            print(
-                f"высчитывается общая сумма заказа в рублях: {price_in_rubles} тип: {type(price_in_rubles)}"
-            )
-
             session_data["line_items"].append(
                 {
                     "price_data": {
@@ -89,15 +82,12 @@ def buy_order(request):
                     "tax_rates": stripe_tax_ids,
                 }
             )
-            print(f"session_data: {session_data}")
-
         # купон Stripe
         if order.coupon:
             stripe_coupon = stripe.Coupon.create(
                 name=order.coupon.code, percent_off=order.discount, duration="once"
             )
             session_data["discounts"] = [{"coupon": stripe_coupon.id}]
-            print(f"session_data after coupon: {session_data}")
         session = stripe.checkout.Session.create(**session_data)
         return redirect(session.url, code=303)
     else:
@@ -110,7 +100,6 @@ def buy_order_intent(request):
 
     if request.method == "POST":
         total_amount = int(order.get_total_cost() * Decimal("100"))
-        print(f"Total amount: {total_amount}")
 
         stripe_tax_ids = []
         if order.tax.exists():
@@ -157,7 +146,6 @@ def buy_order_intent(request):
             "stripe_key": settings.STRIPE_PUBLISHABLE_KEY,
             "completed_url": completed_url,
         }
-        print(f"{context}")
         return render(request, "payments/item/process_payment.html", context)
     else:
         return render(request, "payments/item/process.html", locals())
