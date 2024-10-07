@@ -20,25 +20,28 @@ def buy_item(request, id):
     item = get_object_or_404(Item, id=id)
     success_url = request.build_absolute_uri(reverse("payment:completed"))
     cancel_url = request.build_absolute_uri(reverse("payment:canceled"))
-    session = stripe.checkout.Session.create(
-        payment_method_types=["card"],
-        line_items=[
-            {
-                "price_data": {
-                    "unit_amount": int(item.price * Decimal("100")),
-                    "currency": item.currency,
-                    "product_data": {
-                        "name": item.name,
+    try:
+        session = stripe.checkout.Session.create(
+            payment_method_types=["card"],
+            line_items=[
+                {
+                    "price_data": {
+                        "unit_amount": int(item.price * Decimal("100")),
+                        "currency": item.currency,
+                        "product_data": {
+                            "name": item.name,
+                        },
                     },
-                },
-                "quantity": 1,
-            }
-        ],
-        mode="payment",
-        success_url=success_url,
-        cancel_url=cancel_url,
-    )
-    return JsonResponse({"sessionId": session.id})
+                    "quantity": 1,
+                }
+            ],
+            mode="payment",
+            success_url=success_url,
+            cancel_url=cancel_url,
+        )
+        return JsonResponse({"sessionId": session.id})
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=400)
 
 
 def buy_order(request):

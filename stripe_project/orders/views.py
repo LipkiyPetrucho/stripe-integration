@@ -21,7 +21,6 @@ def order_create(request):
                 order.save()
 
                 tax_rates = Tax.objects.all()
-                print(f"tax_rates: {tax_rates}")
                 if tax_rates.exists():
                     order.tax.set(tax_rates)
 
@@ -32,14 +31,6 @@ def order_create(request):
                         price=item["price"],
                         quantity=item["quantity"],
                         currency=item["currency"],
-                    )
-                for order_item in order.items.all():
-                    print(
-                        f"OrderItem: ID={order_item.id},"
-                        f" OrderID={order_item.order.id},"
-                        f" Item={order_item.item.name},"
-                        f" Price={order_item.price},"
-                        f" Quantity={order_item.quantity}"
                     )
                 cart.clear()
                 request.session["order_id"] = order.id
