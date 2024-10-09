@@ -13,7 +13,7 @@ class ItemSerializer(ModelSerializer):
 class OrderItemSerializer(ModelSerializer):
     class Meta:
         model = OrderItem
-        fields = '__all__'
+        fields = "__all__"
 
 
 class OrderSerializer(ModelSerializer):
@@ -21,17 +21,17 @@ class OrderSerializer(ModelSerializer):
 
     class Meta:
         model = Order
-        fields = '__all__'
+        fields = "__all__"
 
     def create(self, validated_data):
-        items_data = validated_data.pop('items', [])
+        items_data = validated_data.pop("items", [])
         order = Order.objects.create(**validated_data)
         for item_data in items_data:
             OrderItem.objects.create(order=order, **item_data)
         return order
 
     def update(self, instance, validated_data):
-        items_data = validated_data.pop('items', [])
+        items_data = validated_data.pop("items", [])
         # Обновление полей заказа
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
@@ -39,7 +39,7 @@ class OrderSerializer(ModelSerializer):
 
         # Обновление или создание связанных элементов заказа
         for item_data in items_data:
-            item_id = item_data.get('id')
+            item_id = item_data.get("id")
             if item_id:  # Существующий элемент заказа
                 item = OrderItem.objects.get(id=item_id, order=instance)
                 for attr, value in item_data.items():
