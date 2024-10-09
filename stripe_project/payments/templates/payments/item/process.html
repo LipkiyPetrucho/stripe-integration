@@ -29,13 +29,71 @@
       {% endif %}
 
   <b>Overall:</b> {{ order.get_total_cost|floatformat:2 }} ₽
-  <form action="{% url 'payment:buy_order' %}" method="post">
-    <input type="submit" value="Pay now">
-    {% csrf_token %}
-  </form>
 
-  <form action="{% url 'payment:buy_order_intent' %}" method="post">
-    {% csrf_token %}
-    <button type="submit">Pay now with PaymentIntent</button>
-  </form>
+  <div style="display: flex; flex-direction: column; gap: 10px; align-items: flex-start;">
+  <button id="pay-now" data-action="buy_order">Pay now</button>
+  <button id="pay-now-intent" data-action="buy_order_intent">Pay now with PaymentIntent</button>
+  </div>
+
+  <div id="error-message" style="color: red; margin-top: 10px;"></div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://js.stripe.com/v3/"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const stripe = Stripe('{{ stripe_key }}');
+
+    document.getElementById('pay-now').addEventListener('click', function () {
+      fetch("{% url 'payment:buy_order' %}", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": "{{ csrf_token }}",
+        },
+        body: JSON.stringify({}),
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.sessionId) {
+          stripe.redirectToCheckout({ sessionId: data.sessionId })
+            .then(function (result) {
+              if (result.error) {
+                document.getElementById('error-message').textContent = result.error.message;
+              }
+            });
+        } else {
+          document.getElementById('error-message').textContent = data.error || "An error occurred.";
+        }
+      })
+      .catch(error => {
+        console.error("Error:", error);
+        document.getElementById('error-message').textContent = "An error occurred.";
+      });
+    });
+
+    document.getElementById('pay-now-intent').addEventListener('click', function () {
+      fetch("{% url 'payment:buy_order_intent' %}", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": "{{ csrf_token }}",
+        },
+        body: JSON.stringify({}),
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.clientSecret) {
+          window.location.href = "{% url 'payment:process_payment' %}?clientSecret=" + data.clientSecret;
+        } else {
+          document.getElementById('error-message').textContent = data.error || "An error occurred.";
+        }
+      })
+      .catch(error => {
+        console.error("Error:", error);
+        document.getElementById('error-message').textContent = "An error occurred.";
+      });
+    });
+  });
+</script>
 {% endblock %}

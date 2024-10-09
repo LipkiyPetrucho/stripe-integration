@@ -49,6 +49,7 @@ def buy_order(request):
     order = get_object_or_404(Order, id=order_id)
 
     if request.method == "POST":
+        # Обработка AJAX-запроса для Stripe Checkout
         success_url = request.build_absolute_uri(reverse("payment:completed"))
         cancel_url = request.build_absolute_uri(reverse("payment:canceled"))
         session_data = {
@@ -85,16 +86,19 @@ def buy_order(request):
                     "tax_rates": stripe_tax_ids,
                 }
             )
-        # купон Stripe
         if order.coupon:
             stripe_coupon = stripe.Coupon.create(
                 name=order.coupon.code, percent_off=order.discount, duration="once"
             )
             session_data["discounts"] = [{"coupon": stripe_coupon.id}]
         session = stripe.checkout.Session.create(**session_data)
-        return redirect(session.url, code=303)
+        return JsonResponse({"sessionId": session.id})
     else:
-        return render(request, "payments/item/process.html", locals())
+        context = {
+            "order": order,
+            "stripe_key": stripe_publishable_key,
+        }
+        return render(request, "payments/item/process.html", context)
 
 
 def buy_order_intent(request):
@@ -132,7 +136,6 @@ def buy_order_intent(request):
                 }
             )
 
-        # Обрабатываем каждую позицию в заказе
         intent = stripe.PaymentIntent.create(
             amount=total_amount,
             currency="rub",
@@ -141,17 +144,32 @@ def buy_order_intent(request):
                 "order_items": json.dumps(items_data),
             },
         )
-        completed_url = request.build_absolute_uri(reverse("payment:completed"))
-        context = {
-            "client_secret": intent.client_secret,
-            "order": order,
-            "stripe_tax_ids": stripe_tax_ids,
-            "stripe_key": settings.STRIPE_PUBLISHABLE_KEY,
-            "completed_url": completed_url,
-        }
-        return render(request, "payments/item/process_payment.html", context)
+        return JsonResponse({"clientSecret": intent.client_secret})
     else:
-        return render(request, "payments/item/process.html", locals())
+        context = {
+            "order": order,
+            "stripe_key": stripe_publishable_key,
+        }
+        return render(request, "payments/item/process.html", context)
+
+
+def process_payment(request):
+    client_secret = request.GET.get("clientSecret", None)
+    if not client_secret:
+        return redirect("payment:canceled")  # Или другой обработчик ошибок
+
+    order_id = request.session.get("order_id", None)
+    order = get_object_or_404(Order, id=order_id)
+
+    completed_url = request.build_absolute_uri(reverse("payment:completed"))
+
+    context = {
+        "client_secret": client_secret,
+        "order": order,
+        "stripe_key": stripe_publishable_key,
+        "completed_url": completed_url,
+    }
+    return render(request, "payments/item/process_payment.html", context)
 
 
 def item_list(request):

@@ -1,32 +1,8 @@
-<head>
-  <title>Checkout</title>
-  <style>
-    #payment-form {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
+{% extends "payments/base.html" %}
 
-    #submit {
-      background-color: #4CAF50;
-      color: white;
-      padding: 15px;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-      font-size: 16px;
-      margin-top: 20px;
-    }
-    #submit:hover {
-      background-color: #45a049;
-    }
+{% block title %}Checkout{% endblock %}
 
-    #payment-message {
-      margin-top: 10px;
-    }
-  </style>
-</head>
-<body>
+{% block content %}
 <div class="order-summary" style="background-color: #1a1a1a; padding: 20px; color: #ffffff;">
   <h1>Order summary</h1>
   <ul>
@@ -62,39 +38,44 @@
   </div>
   {% csrf_token %}
 </form>
-</body>
+{% endblock %}
 
+{% block extra_js %}
 <script src="https://js.stripe.com/v3/"></script>
 <script>
-  const csrftoken = '{{ csrf_token }}';
-  const stripe = Stripe('{{ stripe_key }}');
-  const options = {
-    clientSecret: '{{ client_secret }}',
+  document.addEventListener('DOMContentLoaded', function () {
+    const clientSecret = new URLSearchParams(window.location.search).get('clientSecret');
+    const stripe = Stripe('{{ stripe_key }}');
+
+    const options = {
+        clientSecret: clientSecret,
         appearance: {
           theme: 'night',
         },
-  };
-  const elements = stripe.elements(options);
+      };
 
-  const paymentElement = elements.create('payment');
-  paymentElement.mount('#payment-element');
+    const elements = stripe.elements(options);
+    const paymentElement = elements.create('payment');
+    paymentElement.mount('#payment-element');
 
-  const form = document.getElementById('payment-form');
-  form.addEventListener('submit', async (event) => {
-    event.preventDefault();
+    const form = document.getElementById('payment-form');
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
 
-    const {error} = await stripe.confirmPayment({
-      elements,
-      confirmParams: {
-        return_url: "{{ completed_url }}",
-      },
+      const { error } = await stripe.confirmPayment({
+        elements,
+        confirmParams: {
+          return_url: "{{ completed_url }}",
+        },
+      });
+
+      if (error) {
+        const messageContainer = document.querySelector('#error-message');
+        messageContainer.textContent = error.message;
+      } else {
+        console.log('Redirecting to Stripe Checkout...');
+      }
     });
-
-    if (error) {
-      const messageContainer = document.querySelector('#error-message');
-      messageContainer.textContent = error.message;
-    } else {
-      console.log('Redirecting to Stripe Checkout...');
-    }
   });
 </script>
+{% endblock %}

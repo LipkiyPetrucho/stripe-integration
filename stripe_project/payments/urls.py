@@ -9,6 +9,7 @@ from .views import (
     item_list,
     buy_order,
     buy_order_intent,
+    process_payment,
 )
 
 app_name = "payment"
@@ -18,6 +19,7 @@ urlpatterns = [
     path("buy/<int:id>/", buy_item, name="buy_item"),
     path("buy_order/", buy_order, name="buy_order"),
     path("buy_order_intent/", buy_order_intent, name="buy_order_intent"),
+    path("process_payment/", process_payment, name="process_payment"),
     path("completed/", payment_completed, name="completed"),
     path("canceled/", payment_canceled, name="canceled"),
     path("payment/webhook/", webhooks.stripe_webhook, name="stripe-webhook"),
