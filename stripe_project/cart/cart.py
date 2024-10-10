@@ -75,12 +75,6 @@ class Cart:
         del self.session[settings.CART_SESSION_ID]
         self.save()
 
-    def get_total_price_in_rubles(self):
-        """Возвращает общую стоимость товаров в корзине, конвертируя их в рубли."""
-        return get_total_price_from_cart(
-            self.cart
-        )  # TODO: Проверить надобность использования
-
     @property
     def coupon(self):
         if self.coupon_id:

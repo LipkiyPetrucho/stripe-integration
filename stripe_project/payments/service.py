@@ -27,6 +27,7 @@ def exchange_to_rubles() -> Decimal:
     url = "http://www.cbr.ru/scripts/XML_daily.asp?"
     params = {"date_req": current_date}
     request = requests.get(url, params)
+
     soup = BeautifulSoup(request.content, "lxml-xml")
     dollar_rate = soup.find(ID="R01235").Value.string
     dollar_rate = Decimal(dollar_rate.replace(",", ".")).quantize(Decimal("1.00"))
@@ -61,17 +62,4 @@ def get_total_price_from_cart(cart_items) -> Decimal:
 
     total_price = Decimal(total_price_rub + total_price_usd).quantize(Decimal("1.00"))
     print(f"Total price cart: {total_price}")
-    return total_price
-
-
-def get_total_price_from_items(items) -> Decimal:
-    total_price_rub, total_price_usd = 0, 0
-    for item in items:
-        if item.currency == "rub":
-            total_price_rub += item.price
-        elif item.currency == "usd":
-            total_price_usd += item.price * exchange_to_rubles()
-
-    total_price = Decimal(total_price_rub + total_price_usd).quantize(Decimal("1.00"))
-    print(f"Total price items: {total_price}")
     return total_price
