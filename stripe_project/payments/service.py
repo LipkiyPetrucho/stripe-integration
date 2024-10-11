@@ -8,37 +8,38 @@ import stripe
 from bs4 import BeautifulSoup
 
 from payments.models import Item
+from payments.utils.currency import get_exchange_rate
 
 stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
 stripe_publishable_key = os.getenv("STRIPE_PUBLISHABLE_KEY")
 
 
-def get_current_date() -> str:
-    """Получение текущей даты, перевод в строку"""
-    timezone = pytz.timezone("Europe/Moscow")
-    get_now_with_tz = timezone.localize(datetime.now())
-    current_date = get_now_with_tz.strftime("%d.%m.%Y")
-    return current_date
-
-
-def exchange_to_rubles() -> Decimal:
-    """Перевод долларов в рубли по курсу"""
-    current_date = get_current_date()
-    url = "http://www.cbr.ru/scripts/XML_daily.asp?"
-    params = {"date_req": current_date}
-    request = requests.get(url, params)
-
-    soup = BeautifulSoup(request.content, "lxml-xml")
-    dollar_rate = soup.find(ID="R01235").Value.string
-    dollar_rate = Decimal(dollar_rate.replace(",", ".")).quantize(Decimal("1.00"))
-    print(f"Курс доллара в рублях: {dollar_rate}")
-    return dollar_rate
+# def get_current_date() -> str:
+#     """Получение текущей даты"""
+#     timezone = pytz.timezone("Europe/Moscow")
+#     get_now_with_tz = timezone.localize(datetime.now())
+#     current_date = get_now_with_tz.strftime("%d.%m.%Y")
+#     return current_date
+#
+#
+# def exchange_to_rubles() -> Decimal:
+#     """Перевод долларов в рубли по курсу"""
+#     current_date = get_current_date()
+#     url = "http://www.cbr.ru/scripts/XML_daily.asp?"
+#     params = {"date_req": current_date}
+#     request = requests.get(url, params)
+#
+#     soup = BeautifulSoup(request.content, "lxml-xml")
+#     dollar_rate = soup.find(ID="R01235").Value.string
+#     dollar_rate = Decimal(dollar_rate.replace(",", ".")).quantize(Decimal("1.00"))
+#     print(f"Курс доллара в рублях: {dollar_rate}")
+#     return dollar_rate
 
 
 def get_total_price_from_cart(cart_items) -> Decimal:
     """Функция для получения общей суммы заказа."""
-    total_price_rub, total_price_usd = 0, 0
-    exchange_rate = exchange_to_rubles()
+    total_price_rub, total_price_usd = Decimal("0.00"), Decimal("0.00")
+    exchange_rate = get_exchange_rate()
 
     # Извлекаем идентификаторы товаров из словарей
     item_ids = [
@@ -60,6 +61,6 @@ def get_total_price_from_cart(cart_items) -> Decimal:
         elif product.currency == "usd":
             total_price_usd += item_price * item_quantity * exchange_rate
 
-    total_price = Decimal(total_price_rub + total_price_usd).quantize(Decimal("1.00"))
+    total_price = (total_price_rub + total_price_usd).quantize(Decimal("1.00"))
     print(f"Total price cart: {total_price}")
     return total_price

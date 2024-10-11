@@ -6,7 +6,7 @@ from django.db import models
 
 from coupons.models import Coupon, Tax
 from payments.models import Item
-from payments.service import exchange_to_rubles
+from payments.utils.currency import get_exchange_rate
 
 
 class Order(models.Model):
@@ -68,7 +68,7 @@ class Order(models.Model):
     def get_discount(self):
         total_cost = self.get_total_cost_before_discount()
         if self.discount:
-            return total_cost * (self.discount / Decimal(100))
+            return total_cost * (Decimal(self.discount) / Decimal(100))
         return Decimal(0)
 
 
@@ -86,16 +86,15 @@ class OrderItem(models.Model):
         return str(self.id)
 
     def get_cost(self):
-        total_price_rub = 0
-        total_price_usd = 0
+        price = Decimal(self.price)
+        quantity = Decimal(self.quantity)
         if self.currency == "rub":
-            total_price_rub += self.price * self.quantity
+            return (price * quantity).quantize(Decimal("1.00"))
         elif self.currency == "usd":
-            total_price_usd += self.price * self.quantity * exchange_to_rubles()
-        return Decimal(total_price_rub + total_price_usd).quantize(Decimal("1.00"))
+            return (price * quantity * get_exchange_rate()).quantize(Decimal("1.00"))
 
     def convert_item_price(self):
         if self.currency == "usd":
-            return Decimal(self.price) * exchange_to_rubles()
+            return Decimal(self.price) * get_exchange_rate()
         else:
             return Decimal(self.price)

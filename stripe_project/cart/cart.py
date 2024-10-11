@@ -4,7 +4,7 @@ from django.conf import settings
 
 from payments.models import Item
 from coupons.models import Coupon
-from payments.service import get_total_price_from_cart, exchange_to_rubles
+from payments.utils.currency import get_exchange_rate
 
 
 class Cart:
@@ -59,15 +59,14 @@ class Cart:
         return sum(item["quantity"] for item in self.cart.values())
 
     def get_total_price(self):
-        total_price_rub = 0
-        total_price_usd = 0
+        total_price_rub = Decimal("0.00")
+        total_price_usd = Decimal("0.00")
+        exchange_rate = get_exchange_rate()
         for item in self.cart.values():
             if item["currency"] == "rub":
                 total_price_rub += item["price"] * item["quantity"]
             elif item["currency"] == "usd":
-                total_price_usd += (
-                    item["price"] * item["quantity"] * exchange_to_rubles()
-                )
+                total_price_usd += item["price"] * item["quantity"] * exchange_rate
         return Decimal(total_price_rub + total_price_usd).quantize(Decimal("1.00"))
 
     def clear(self):

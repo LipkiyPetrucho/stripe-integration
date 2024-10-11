@@ -49,7 +49,6 @@ def buy_order(request):
     order = get_object_or_404(Order, id=order_id)
 
     if request.method == "POST":
-        # Обработка AJAX-запроса для Stripe Checkout
         success_url = request.build_absolute_uri(reverse("payment:completed"))
         cancel_url = request.build_absolute_uri(reverse("payment:canceled"))
         session_data = {
